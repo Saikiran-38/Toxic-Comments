@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Toxic Comment Classifier</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .toxic { color: red; }
+        .non-toxic { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Toxic Comment Classifier</h1>
+    <form id="commentForm">
+        <textarea id="commentText" placeholder="Enter a comment to analyze..."></textarea>
+        <button type="submit">Analyze</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('commentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const comment = document.getElementById('commentText').value;
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `comment=${encodeURIComponent(comment)}`
+            });
+            const result = await response.json();
+            
+            // Display results
+            let output = '<h2>Analysis Results:</h2>';
+            output += `<p><strong>Original Comment:</strong> ${result.comment_text}</p>`;
+            for (const [key, value] of Object.entries(result)) {
+                if (key !== 'comment_text' && key !== 'id') {
+                    output += `<p><strong>${key.replace('_', ' ')}:</strong> `;
+                    output += `<span class="${value ? 'toxic' : 'non-toxic'}">`;
+                    output += `${value ? '1' : '0'}</span></p>`;
+                }
+            }
+            document.getElementById('results').innerHTML = output;
+        });
+    </script>
+</body>
+</html>
